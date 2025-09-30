@@ -1,0 +1,29 @@
+class Compilador{
+
+	public static void main(String[]args)
+	{	
+		ArvoreSintatica arv=null;
+	
+		try{
+
+			AnaliseLexica al = new AnaliseLexica(args[0]);
+			Parser as = new Parser(al);
+			
+			arv = as.parseProg();
+			
+			
+			CodeGen backend = new CodeGen();
+			String codigo = backend.geraCodigo(arv);
+			System.out.println(codigo);
+			al.delArchive();
+			MaquinaPilha mp = new MaquinaPilha(args[1]);
+			mp.executa();
+		}catch(Exception e)
+		{			
+			System.out.println("Erro de compilação:\n" + e);
+		}
+
+
+
+	}
+}

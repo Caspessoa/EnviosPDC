@@ -1,0 +1,125 @@
+PARSER_BEGIN(Lovelace)
+import java.io.*;
+public class Lovelace {
+
+  public static void main(String args[]) throws ParseException,IOException {
+    
+ 	Lovelace analisador = new Lovelace(new FileInputStream(args[0]));
+ 	analisador.Lovelace();
+  }
+
+}
+
+PARSER_END(Lovelace)
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+}
+
+TOKEN :
+{
+  <MAIN: "main">
+| <LET: "let">
+|<APAR: "(">
+|<FPAR: ")">  
+| <BEGIN: "begin">
+| <END: "end">
+| <PV: ";">
+| <VIRGULA: ",">
+| <FLOAT: "Float">
+| <BOOL: "Bool">
+| <VOID: "Void">
+| <ATR: ":=">
+| <PRINT: "print">
+| <IF: "if">
+| <WHILE: "while">
+| <RETURN: "return">
+| <SOMA: "+">
+| <SUB: "-">
+| <DIV: "/">
+| <MULT: "*">
+| <AND: "&&">
+| <OR: "||">
+| <MAIOR: ">">
+| <MENOR: "<">
+| <IGUAL: "==">
+| <READ: "read">
+| <TRUE: "true">
+| <FALSE: "false">
+| <DEF: "def">
+
+
+}
+
+TOKEN :
+{
+  <NUM : (["0"-"9"])+ ( ["."] ( ["0"-"9"])+)*>
+ |< ID: ["a"-"z","A"-"Z"] ( ["a"-"z","A"-"Z","0"-"9"])* ( ["_"] ( ["a"-"z","A"-"Z","0"-"9"])*)*>
+ |< NUMLITERAL: (["0"-"9"])+ ( ["."] ( ["0"-"9"])+)* ( ["0"-"9"] (["+","-"])? ["0"-"9"])? >  
+ 
+}
+
+
+
+void Lovelace () :
+{Token t;}
+{
+
+(
+  <MAIN> { System.out.println("Palavra reservada: main");}
+
+| <LET> { System.out.println("Palavra reservada: let");}
+
+| <APAR> { System.out.println("Abre parenteses: (");}
+| <FPAR> { System.out.println("Fecha parenteses: )");}
+
+| <BEGIN> { System.out.println("Palavra reservada: begin");}
+| <END>  { System.out.println("Palavra reservada: end");}  
+
+| <PV> { System.out.println("Ponto e vírgula: ;");}
+
+| <VIRGULA> { System.out.println("Vírgula: ,");}
+
+| <FLOAT> { System.out.println("Palavra reservada: Float");}
+| <BOOL> { System.out.println("Palavra reservada: Bool");}
+| <VOID> { System.out.println("Palavra reservada: Void");}
+
+| <ATR> { System.out.println("Atribuicao: :=");}
+| <PRINT> { System.out.println("Palavra reservada: print");}
+
+| <IF> { System.out.println("Palavra reservada: if");}
+| <WHILE> { System.out.println("Palavra reservada: while");}
+| <RETURN> { System.out.println("Palavra reservada: return");}
+
+| <SOMA> { System.out.println("Soma: +");}
+| <SUB> { System.out.println("Subtracao: -");}
+| <DIV> { System.out.println("Divisao: /");}
+| <MULT> { System.out.println("Multiplicacao: *");}
+| <AND> { System.out.println("And: &&");}
+| <OR> { System.out.println("Or: ||");}
+| <MAIOR> { System.out.println("Maior: >");}
+| <MENOR> { System.out.println("Menor: <");}
+| <IGUAL> { System.out.println("Igual: ==");}
+
+| <READ> { System.out.println("Palavra reservada: read");}
+| <TRUE> { System.out.println("Palavra reservada: true");}
+| <FALSE> { System.out.println("Palavra reservada: false");}
+| <DEF> { System.out.println("Palavra reservada: def");}
+
+| t=<NUM> { System.out.println("Numero: "+ t.image);}
+| t=<ID> { System.out.println("Identificador: "+ t.image);}
+| t=<NUMLITERAL> { System.out.println("Literal: "+ t.image);}
+)*
+<EOF> 
+
+
+}
+
+
+
+
+

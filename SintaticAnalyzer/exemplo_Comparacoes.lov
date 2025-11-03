@@ -1,0 +1,35 @@
+main()
+begin
+  let Float var1;
+  let Float var2;
+  let Bool ref1;
+  let Bool ref2;
+  let Bool ref3;
+  
+  var1 := 15.0;
+  var2 := 10.0;
+  
+  ref1 := (var1 > var2);
+  print ref1;
+  
+  ref2 := (var1 < var2);
+  print ref2;
+  
+  ref3 := (var1 == var2);
+  print ref3;
+  
+  if (var1 > var2)
+  begin
+    print true;
+  end;
+  
+  if (var1 < var2)
+  begin
+    print false;
+  end;
+  
+  if (var1 == var1)
+  begin
+    print true;
+  end;
+end

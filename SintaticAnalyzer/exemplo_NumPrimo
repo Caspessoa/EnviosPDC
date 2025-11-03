@@ -1,0 +1,81 @@
+main()
+begin
+  let Float var1;
+  let Bool resultado;
+  
+  var1 := 7.0;
+  resultado := numPrimo(var1);
+  print var1;
+  print resultado;
+  
+  var1 := 10.0;
+  resultado := numPrimo(var1);
+  print var1;
+  print resultado;
+  
+  listarPrimos(20.0);
+end
+
+
+def Bool numPrimo(Float n)
+begin
+  let Float divisor;
+  let Float resto;
+  let Bool primo;
+  
+  primo := true;
+  
+  if (n < 2.0)
+  begin
+    primo := false;
+  end;
+  
+  divisor := 2.0;
+  while ((divisor < n) && primo)
+  begin
+    resto := calcularResto(n, divisor);
+    
+    if (resto == 0.0)
+    begin
+      primo := false;
+    end;
+    
+    divisor := (divisor + 1.0);
+  end;
+  
+  return primo;
+end
+
+def Float calcularResto(Float dividendo, Float divisor)
+begin
+  let Float quociente;
+  let Float produto;
+  let Float resto;
+  
+  quociente := (dividendo / divisor);
+  produto := (quociente * divisor);
+  resto := (dividendo - produto);
+  
+  return resto;
+end
+
+def Void listarPrimos(Float limite)
+begin
+  let Float i;
+  let Bool primo;
+  
+  i := 2.0;
+  while (i < limite)
+  begin
+    primo := numPrimo(i);
+    
+    if primo
+    begin
+      print i;
+    end;
+    
+    i := (i + 1.0);
+  end;
+  
+  return false;
+end

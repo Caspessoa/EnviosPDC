@@ -21,8 +21,6 @@ class MaquinaPilha {
         Deque<Integer> p = new ArrayDeque<Integer>();
         //Stack p = new Stack();
         String linha;
-        char currentChar;
-        int charCode;
 
         while((linha = arquivo.readLine()) != null)
             if (linha.length() > 0) {

@@ -1,0 +1,227 @@
+PARSER_BEGIN(Lovelace)
+import java.io.*;
+public class Lovelace {
+
+  public static void main(String args[]) throws ParseException,IOException {
+    
+ 	Lovelace analisador = new Lovelace(new FileInputStream(args[0]));
+	try {
+	analisador.Lovelace(); // Chama a regra inicial da gramática
+		System.out.println("Analise sintatica concluida com sucesso.");
+	} catch (ParseException e) {
+		System.err.println("Erro sintatico: " + e.getMessage());
+	}
+  }
+
+}
+
+PARSER_END(Lovelace)
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+}
+
+
+TOKEN :
+{
+  <MAIN: "main">
+| <LET: "let">
+| <APAR: "(">
+| <FPAR: ")">  
+| <BEGIN: "begin">
+| <END: "end">
+| <PV: ";">
+| <VIRGULA: ",">
+| <FLOAT: "Float">
+| <BOOL: "Bool">
+| <VOID: "Void">
+| <ATR: ":=">
+| <PRINT: "print">
+| <IF: "if">
+| <WHILE: "while">
+| <RETURN: "return">
+| <SOMA: "+">
+| <SUB: "-">
+| <DIV: "/">
+| <MULT: "*">
+| <AND: "&&">
+| <OR: "||">
+| <MAIOR: ">">
+| <MENOR: "<">
+| <IGUAL: "==">
+| <READ: "read">
+| <TRUE: "true">
+| <FALSE: "false">
+| <DEF: "def">
+}
+
+
+TOKEN :
+{
+  <NUMLITERAL: (["0"-"9"])+ ( "." (["0"-"9"])+ )? ( "E" (["+","-"])? (["0"-"9"])+ )? >
+
+ |< ID: ["a"-"z","A"-"Z"] ( ["a"-"z","A"-"Z","0"-"9"])* ( ["_"] ( ["a"-"z","A"-"Z","0"-"9"])*)*>
+ 
+}
+
+/* LOVELACE -> MAIN FUNC? */
+void Lovelace() :
+{}
+{
+    Main() Func() // sem "?" pois a regra Func já garante essa restrição
+    <EOF>
+}
+
+/* MAIN -> "main" "("")" "begin" VARDECL SEQCOMANDOS "end" */
+Main Main() :
+{
+    // Variáveis locais para armazenar os filhos do nó
+    ArrayList<VarDecl> vars = new ArrayList<VarDecl>();
+    ArrayList<Comando> coms = new ArrayList<Comando>();
+}
+{
+    <MAIN> <APAR> <FPAR> <BEGIN>
+    
+    // Passa o array para ser preenchido dentro do método VarDecl
+    VarDecl(vars) 
+    
+    // Passa o array para ser preenchido dentro do método SeqComandos
+    SeqComandos(coms) 
+    
+    <END>
+    
+    // Retorna o nó da árvore pronto
+    { return new Main(vars, coms); }
+}
+
+/* * VARDECL -> VARDECL "let" TIPO TOKEN_id ";" | vazio
+// Recebe a lista 'vars' instanciada no Main e adiciona itens nela
+void VarDecl(ArrayList<VarDecl> vars) :
+{
+    Token tType, tId;
+    String tipo;
+}
+{
+    (
+      <LET> 
+      tipo=Tipo() // Tipo() agora deve retornar String
+      tId=<ID> 
+      <PV>
+      // Ação Java: Adiciona na lista
+      { vars.add(new VarDecl(tipo, tId.image)); }
+    )*
+}
+
+/* TIPO -> "Float" | "Bool" | "Void" */
+void Tipo() :
+{}
+{
+    <FLOAT> | <BOOL> | <VOID>
+}
+
+/* * SEQCOMANDOS -> SEQCOMANDOS COMANDO | vazio
+ * Removida recursão à esquerda: ( COMANDO )*
+ */
+void SeqComandos() :
+{}
+{
+    (Comando())*
+}
+
+Comando Comando() :
+{
+    Token t;
+    Exp e = null;
+    ArrayList<Exp> args = null;
+    ArrayList<Comando> bloco = null;
+}
+{
+    // Captura o token ID primeiro
+    t=<ID> 
+    (
+        // Caso Atribuição: ID := Exp ;
+        ( <ATR> e=Exp() <PV> )
+        { return new CAtribuicao(t.beginLine, t.image, e); }
+        
+        |
+        // Caso Chamada de Função: ID ( args ) ;
+        ( <APAR> [ args=ListaExp() ] <FPAR> <PV> )
+        { 
+            if (args == null) args = new ArrayList<Exp>();
+            return new CChamadaFun(t.beginLine, t.image, args); 
+        }
+    )
+    |
+    // Caso IF
+    <IF> e=Exp() <BEGIN> { bloco = new ArrayList<Comando>(); } SeqComandos(bloco) <END> <PV>
+    { return new CIf(token.beginLine, e, bloco); } // token.beginLine pega a linha do IF
+  
+    // ... Repetir lógica para While, Print, etc.
+}
+
+/* EXP -> "(" EXP OP EXP ")" | FATOR */
+void Exp() :
+{}
+{
+    ( <APAR> Exp() Op() Exp() <FPAR> )
+    |
+    Fator()
+}
+
+/* * FATOR -> TOKEN_id | TOKEN_id "(" LISTAEXP? ")" | TOKEN_numliteral | "true" | "false"
+ * Resolvida ambiguidade do TOKEN_id com fatoração.
+ */
+void Fator() :
+{}
+{
+    (
+        /* * Agrupa "TOKEN_id" e "TOKEN_id ( LISTAEXP? )" */
+        <ID> ( <APAR> ( ListaExp() )? <FPAR> )?
+    )
+    |
+    <NUMLITERAL>
+    |
+    <TRUE>
+    |
+    <FALSE>
+}
+
+/* OP -> "+" | "-" | "*" | "/" | "&&" | "||" | "<" | ">" | "==" */
+void Op() :
+{}
+{
+    <SOMA> | <SUB> | <MULT> | <DIV> | <AND> | <OR> | <MENOR> | <MAIOR> | <IGUAL>
+}
+
+/* * LISTAEXP -> EXP | LISTAEXP "," EXP
+ * Removida recursão à esquerda: EXP ( "," EXP )*
+ */
+void ListaExp() :
+{}
+{
+    Exp() ( <VIRGULA> Exp() )*
+}
+
+/* * FUNC -> FUNC "def" ... | "def" ... 
+ * Removida recursão à esquerda: ( "def" ... )*
+ */
+void Func() :
+{}
+{
+    (
+        <DEF> Tipo() <ID> <APAR> ( ListaArg() )? <FPAR> <BEGIN> VarDecl() SeqComandos() <END>
+    )*
+}
+
+/* * LISTAARG -> TIPO TOKEN_id | LISTAARG "," TIPO TOKEN_id
+ * Removida recursão à esquerda: TIPO ID ( "," TIPO ID )*
+ */
+void ListaArg() :
+{}
+{
+    Tipo() <ID> ( <VIRGULA> Tipo() <ID> )*
+}
